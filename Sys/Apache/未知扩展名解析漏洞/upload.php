@@ -5,10 +5,19 @@
     <title>Upload</title>
 </head>
 <body>
-<form action="" enctype='multipart/form-data' method="post">
-    <input type="file" name="filename">
-    <input type="submit" name="button" value="点击上传">
+<form action="" enctype='multipart/form-data' method="post" >
+    <input type="file" name="filename" id="filename" >
+    <input type="text" name="name" id="text">
+    <input type="submit" name="button" value="点击上传" onmousemove="return checksubmit()">
 </form>
+<script>
+    function checksubmit () {
+        var name = document.getElementById("filename");
+        var filename = name.value;
+        document.getElementById("text").value = filename;
+    }
+
+</script>
 </body>
 </html>
 <?php
@@ -22,17 +31,18 @@ if ($_FILES['filename']['error'] != 0) {
     exit("上传失败");
 }
 
-// 判断文件类型
-$fi = new finfo(FILEINFO_MIME_TYPE);
-$mimeType = $fi -> file($_FILES['filename']['tmp_name']);
+// 获取文件名
+$name = basename($_POST['name']);
+print_r($name);
 
 // 设置黑名单
-$blackList = array('text/x-php','image/png');
-if (in_array($mimeType,$blackList)) {
-    exit("不允许上传此类型");
+$blackList = array('php','phtml','pht','php3','php4','php5');
+$ext = pathinfo($name,PATHINFO_EXTENSION);
+if (in_array($ext,$blackList)) {
+    exit("不支持此文件");
 } else {
     // 从tmp移动到upload
-    move_uploaded_file($_FILES['filename']['tmp_name'],'./upload/'.$_FILES['filename']['name']);
+    move_uploaded_file($_FILES['filename']['tmp_name'],'./'.$name);
     echo "OK";
 }
 
